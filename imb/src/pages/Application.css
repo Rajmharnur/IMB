@@ -1,0 +1,35 @@
+/* Basic layout styles for the Self Sign-up page */
+.signup-page .site-header .logo{
+  background: #2B26ED;
+  color: white;
+  border-radius: 50%;
+  width:48px;
+  height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+}
+.site-header .nav-link{color:#888D94;text-decoration:none}
+.site-header .personal-login{background:#2B26ED;color:white;padding:6px 12px;border-radius:6px}
+.site-header .signup-pill{background:#e8ff67;color:#2a2ac4;padding:6px 12px;border-radius:20px;border:2px solid #211aee}
+
+.page-title{color:#2B26ED;font-size:36px;margin-top:10px;margin-bottom:20px}
+
+.main-content .left-col{padding-top:20px}
+.welcome{font-weight:700}
+.lead{font-size:16px}
+.checklist ul{list-style: none;padding-left:0}
+.checklist li{padding:6px 0}
+.hero-image{width:100%;max-width:620px}
+.mobile-input{width:300px;background:#f5f5f5}
+.start-btn{background:#e8ff67;color:#2a2ac4;border-radius:50px;border:2px solid #211aee;padding:10px 18px;font-weight:700}
+.terms{font-size:12px;color:#666;margin-top:10px}
+
+.site-footer h5{font-weight:700}
+.site-footer .small{font-size:13px;color:#666}
+
+@media (max-width:768px){
+  .hero-image{max-width:320px}
+  .mobile-input{width:100%}
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "ContainingType": "ServerDotNet.Controllers.OtpController",
+    "Method": "DebugOtps",
+    "RelativePath": "api/otp/debug",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ServerDotNet.Controllers.OtpController",
+    "Method": "SendOtp",
+    "RelativePath": "api/otp/send",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "ServerDotNet.Models.SendOtpRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ServerDotNet.Controllers.OtpController",
+    "Method": "VerifyOtp",
+    "RelativePath": "api/otp/verify",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "ServerDotNet.Models.VerifyOtpRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

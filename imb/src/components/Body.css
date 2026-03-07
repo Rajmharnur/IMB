@@ -1,0 +1,75 @@
+/* wrapper stays same */
+.stepper-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* stepper container */
+.stepper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 150px;
+}
+
+
+/* ACTIVE step (optional, future-ready) */
+.step.active {
+  color: #2B26ED;
+  
+}
+
+
+/* horizontal line */
+.stepper::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #2B26ED;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+/* empty (blank) circles */
+.step {
+  font-size: 14px;
+  color: #9dbbff;       /* light blue */
+  background: white;
+  z-index: 1;
+}
+/* Active step with number */
+.active-step {
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  color: white;
+  background-color: #2B26ED;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+/* Frame 2 */
+.custom-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.custom-underline::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 65px;       /* fixed underline length */
+  height: 3px;        /* thickness */
+  background-color: blue;
+}
+.navbar .nav-link {
+  color: #888D94 !important;
+}
