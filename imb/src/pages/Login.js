@@ -1,73 +1,124 @@
 import React, { useState } from "react";
 import "../components/Body.css";
-import "./Application.css";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-
   const navigate = useNavigate();
 
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [useOtp, setUseOtp] = useState(false);
+
   const [mobile, setMobile] = useState("");
+  const [otp, setOtp] = useState("");
+
+  const [useOtp, setUseOtp] = useState(false);
+  const [otpMode, setOtpMode] = useState(false);
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = () => {
+  const [showPassword, setShowPassword] = useState(false);
 
-    if (useOtp) {
-      if (!mobile) {
-        setError("Mobile number required");
+  // PASSWORD LOGIN
+  const handleLogin = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 404) {
+        navigate("/application");
         return;
       }
 
-      navigate("/otp", { state: { mobile } });
-    } 
-    else {
-      if (!userName || !password) {
-        setError("Username and Password required");
-        return;
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        navigate("/dashboard");
       }
+    } catch (err) {
+      setError("Enter valid credentials");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      console.log("Login with username/password");
+  // SEND OTP
+  const handleSendOtp = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobile }),
+      });
+
+      if (response.ok) {
+        setOtpMode(true);
+      } else {
+        setError("Failed to send OTP");
+      }
+    } catch {
+      setError("Server error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // VERIFY OTP
+  const handleOtpLogin = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobile, otp }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        navigate("/dashboard");
+      } else {
+        setError("Invalid OTP");
+      }
+    } catch {
+      setError("Server error");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <main className="py-5">
+      {/* Header */}
       <div className="centered-content">
         <div className="text-center mb-4">
-          <h1 style={{ color: "#2B26ED" }}>Login</h1>
+          <h1 style={{ color: "#2B26ED" }}>Welcome Back</h1>
         </div>
       </div>
 
       <div className="container text-start">
         <div className="row">
-
-          {/* LEFT COLUMN */}
+          {/* Left column — form */}
           <div className="col-md-4">
 
-            {/* Toggle Login Method */}
-            <div className="mb-3">
-              <button
-                className="btn btn-outline-primary me-2"
-                onClick={() => setUseOtp(false)}
-              >
-                Password Login
-              </button>
-
-              <button
-                className="btn btn-outline-success"
-                onClick={() => setUseOtp(true)}
-              >
-                Login with OTP
-              </button>
-            </div>
-
-            {/* USERNAME LOGIN */}
-            {!useOtp && (
+            {!useOtp ? (
               <>
+                <h4><b>Login to Your Account</b></h4>
+                <h6 className="mb-3">Enter your credentials below</h6>
+
                 <input
                   type="text"
                   className="form-control mb-3"
@@ -77,58 +128,153 @@ const Login = () => {
                   style={{ width: "300px", backgroundColor: "#F5F5F5" }}
                 />
 
-                <div className="input-group mb-3" style={{ width: "300px" }}>
+                <div style={{ position: "relative", width: "300px" }} className="mb-3">
                   <input
                     type={showPassword ? "text" : "password"}
                     className="form-control"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    style={{ backgroundColor: "#F5F5F5" }}
+                    style={{
+                      backgroundColor: "#F5F5F5",
+                      paddingRight: "2.5rem",
+                    }}
                   />
+                  <i
+                    className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    style={{
+                      position: "absolute",
+                      right: "10px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      cursor: "pointer",
+                      color: "#666",
+                    }}
+                  />
+                </div>
+
+                {error && <small style={{ color: "red" }}>{error}</small>}
+
+                <h6 className="mt-2">
+                  Use your registered username and password to sign in.
+                </h6>
+
+                <div className="mt-4 d-flex flex-column gap-2" style={{ width: "300px" }}>
+                  <button
+                    className="btn fw-bold px-4 py-2"
+                    onClick={handleLogin}
+                    disabled={loading}
+                    style={{
+                      backgroundColor: "#e8ff67",
+                      color: "#2a2ac4",
+                      borderRadius: "50px",
+                      border: "2px solid #211aee",
+                    }}
+                  >
+                    {loading ? "Logging in..." : "Login"}
+                    <i className="bi bi-arrow-right-circle ms-2"></i>
+                  </button>
 
                   <button
-                    className="btn btn-outline-secondary"
-                    onClick={() => setShowPassword(!showPassword)}
+                    className="btn fw-bold px-4 py-2"
+                    onClick={() => setUseOtp(true)}
+                    style={{
+                      backgroundColor: "white",
+                      color: "#2a2ac4",
+                      borderRadius: "50px",
+                      border: "2px solid #211aee",
+                    }}
                   >
-                    {showPassword ? "Hide" : "Show"}
+                    Login with OTP
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h4><b>Login with OTP</b></h4>
+                <h6 className="mb-3">Enter your mobile number</h6>
+
+                <input
+                  type="tel"
+                  className="form-control mb-3"
+                  placeholder="Mobile Number"
+                  value={mobile}
+                  maxLength={10}
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ""))}
+                  style={{ width: "300px", backgroundColor: "#F5F5F5" }}
+                />
+
+                {otpMode && (
+                  <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    style={{ width: "300px", backgroundColor: "#F5F5F5" }}
+                  />
+                )}
+
+                {error && <small style={{ color: "red" }}>{error}</small>}
+
+                <h6 className="mt-2">
+                  {otpMode
+                    ? "Enter the OTP sent to your mobile number."
+                    : "We'll send a One-Time PIN (OTP) via SMS to verify your number."}
+                </h6>
+
+                <div className="mt-4 d-flex flex-column gap-2" style={{ width: "300px" }}>
+                  {!otpMode ? (
+                    <button
+                      className="btn fw-bold px-4 py-2"
+                      onClick={handleSendOtp}
+                      disabled={loading}
+                      style={{
+                        backgroundColor: "#e8ff67",
+                        color: "#2a2ac4",
+                        borderRadius: "50px",
+                        border: "2px solid #211aee",
+                      }}
+                    >
+                      {loading ? "Sending OTP..." : "Send OTP"}
+                      <i className="bi bi-arrow-right-circle ms-2"></i>
+                    </button>
+                  ) : (
+                    <button
+                      className="btn fw-bold px-4 py-2"
+                      onClick={handleOtpLogin}
+                      disabled={loading}
+                      style={{
+                        backgroundColor: "#e8ff67",
+                        color: "#2a2ac4",
+                        borderRadius: "50px",
+                        border: "2px solid #211aee",
+                      }}
+                    >
+                      {loading ? "Verifying..." : "Verify OTP"}
+                      <i className="bi bi-arrow-right-circle ms-2"></i>
+                    </button>
+                  )}
+
+                  <button
+                    className="btn fw-bold px-4 py-2"
+                    onClick={() => { setUseOtp(false); setOtpMode(false); setError(""); }}
+                    style={{
+                      backgroundColor: "white",
+                      color: "#2a2ac4",
+                      borderRadius: "50px",
+                      border: "2px solid #211aee",
+                    }}
+                  >
+                    Back to Login
                   </button>
                 </div>
               </>
             )}
-
-            {/* OTP LOGIN */}
-            {useOtp && (
-              <input
-                type="tel"
-                className="form-control mb-3"
-                placeholder="Mobile Number"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                style={{ width: "300px", backgroundColor: "#F5F5F5" }}
-              />
-            )}
-
-            {error && <small style={{ color: "red" }}>{error}</small>}
-
-            {/* LOGIN BUTTON */}
-            <div className="mt-4">
-              <button
-                className="btn fw-bold px-4 py-2"
-                onClick={handleLogin}
-                style={{
-                  backgroundColor: "#e8ff67",
-                  color: "#2a2ac4",
-                  borderRadius: "50px",
-                  border: "2px solid #211aee",
-                }}
-              >
-                {useOtp ? "Send OTP" : "Login"}
-              </button>
-            </div>
           </div>
 
-          {/* RIGHT COLUMN */}
+          {/* Right column — image */}
           <div className="col-md-6 d-flex justify-content-end">
             <img
               src="/card.png"
@@ -136,7 +282,6 @@ const Login = () => {
               style={{ width: "627px", height: "391px" }}
             />
           </div>
-
         </div>
       </div>
     </main>

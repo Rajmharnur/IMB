@@ -98,3 +98,4 @@ D:\Project\server-dotnet\obj\Debug\net8.0\refint\server-dotnet.dll
 D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.pdb
 D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.genruntimeconfig.cache
 D:\Project\server-dotnet\obj\Debug\net8.0\ref\server-dotnet.dll
+D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.sourcelink.json

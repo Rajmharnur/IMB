@@ -73,3 +73,7 @@
 .navbar .nav-link {
   color: #888D94 !important;
 }
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none;
+}

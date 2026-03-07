@@ -16,7 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddScoped<OtpService>();
-
+builder.Services.AddScoped<JwtService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact",
