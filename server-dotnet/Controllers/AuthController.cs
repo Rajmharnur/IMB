@@ -21,8 +21,39 @@ namespace ServerDotNet.Controllers
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
+      // Try find by username first
       var user = _context.Users
           .FirstOrDefault(u => u.UserName == request.UserName);
+
+      // If not found by username, try to resolve by mobile number.
+      if (user == null && !string.IsNullOrWhiteSpace(request.UserName))
+      {
+        // Extract digits from the provided identifier (in case user entered mobile)
+        var digits = new string(request.UserName.Where(char.IsDigit).ToArray());
+
+        if (!string.IsNullOrEmpty(digits))
+        {
+          // Handle international +27 or 27 prefix -> local 0XXXXXXXXX
+          string normalized = digits;
+          if (digits.StartsWith("27") && digits.Length >= 11)
+          {
+            normalized = "0" + digits.Substring(2);
+          }
+
+          // Try direct DB lookups for common stored formats
+          user = _context.Users
+            .FirstOrDefault(u => u.MobileNumber == digits || u.MobileNumber == normalized || u.MobileNumber == "+" + digits);
+
+          // Last resort: load into memory and compare digits-only representations
+          if (user == null)
+          {
+            user = _context.Users
+              .AsEnumerable()
+              .FirstOrDefault(u => new string(u.MobileNumber.Where(char.IsDigit).ToArray()) == digits
+                                   || new string(u.MobileNumber.Where(char.IsDigit).ToArray()) == normalized);
+          }
+        }
+      }
 
       if (user == null)
       {

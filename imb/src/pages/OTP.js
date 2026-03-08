@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../components/Body.css";
 import { useNavigate, useLocation } from "react-router-dom";
+import API_URL from "../config";
 
 const OTP = () => {
   const steps = 5;
@@ -8,7 +9,7 @@ const OTP = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Mobile number from previous page
+  // Mobile number from previous page (should already be normalized)
   const mobileNumber = location.state?.mobileNumber;
 
   const [otp, setOtp] = useState("");
@@ -37,7 +38,7 @@ const OTP = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/otp/verify", {
+      const response = await fetch(`${API_URL}/api/otp/verify`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

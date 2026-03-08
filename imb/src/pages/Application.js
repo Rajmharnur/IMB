@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import React, { useState } from "react";
 import "../components/Body.css";
 import "./Application.css";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../config";
 
 const Application = () => {
   const steps = 5;
@@ -12,19 +14,31 @@ const Application = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // South African mobile validation
+  // Normalize input to digits and convert country code '27' -> leading 0
+  const normalizeMobileLocal = (input) => {
+    if (!input) return "";
+    const digits = input.replace(/\D/g, "");
+    if (digits.startsWith("27") && digits.length >= 11) {
+      // +27 or 27 international format -> local 0XXXXXXXXX
+      return "0" + digits.slice(2);
+    }
+    return digits;
+  };
+
+  // South African mobile validation (local format starting with 0)
   const validateMobile = (number) => {
     const saMobileRegex = /^0[6-8][0-9]{8}$/;
     return saMobileRegex.test(number);
   };
 
   const handleSendOtp = async () => {
-    if (!mobileNumber.trim()) {
+    const normalized = normalizeMobileLocal(mobileNumber);
+
+    if (!normalized) {
       setError("Mobile number is required");
       return;
     }
-
-    if (!validateMobile(mobileNumber)) {
+    if (!validateMobile(normalized)) {
       setError("Enter a valid South African mobile number");
       return;
     }
@@ -33,13 +47,13 @@ const Application = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/otp/send", {
+      const response = await fetch(`${API_URL}/api/otp/send`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mobile: mobileNumber,
+          mobile: normalized,
         }),
       });
 
@@ -48,8 +62,8 @@ const Application = () => {
         throw new Error(msg || "Failed to send OTP");
       }
 
-      // Navigate to OTP screen
-      navigate("/otp", { state: { mobileNumber } });
+      // Navigate to OTP screen with normalized mobile
+      navigate("/otp", { state: { mobileNumber: normalized } });
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -90,12 +104,10 @@ const Application = () => {
             <input
               type="tel"
               className="form-control"
-              placeholder="South African Mobile Number"
+              placeholder="South African Mobile Number (e.g. 0821234567 or +27821234567)"
               value={mobileNumber}
-              maxLength={10}
-              onChange={(e) =>
-                setMobileNumber(e.target.value.replace(/\D/g, ""))
-              }
+              maxLength={13}
+              onChange={(e) => setMobileNumber(e.target.value)}
               style={{
                 width: "300px",
                 backgroundColor: "#F5F5F5",
