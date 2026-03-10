@@ -24,8 +24,12 @@ const Tell = () => {
     idType: "",
     idNumber: "",
     country: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -38,8 +42,22 @@ const Tell = () => {
   };
 
   const handleSubmit = async () => {
-    if (!form.firstName || !form.lastName || !form.dob || !form.gender || !form.idType || !form.idNumber || !form.country) {
+    if (
+      !form.firstName || !form.lastName || !form.dob || !form.gender ||
+      !form.idType || !form.idNumber || !form.country ||
+      !form.username || !form.password || !form.confirmPassword
+    ) {
       setError("All fields are required");
+      return;
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters");
       return;
     }
 
@@ -57,6 +75,8 @@ const Tell = () => {
           dob: dobDate || new Date().toISOString().slice(0, 10),
           mobile_number: mobileNumber,
           employer: "Pending",
+          username: form.username,
+          password: form.password,
         }),
       });
 
@@ -139,46 +159,91 @@ const Tell = () => {
               onChange={(e) => updateField("lastName", e.target.value)}
             />
 
-<DobInput
-  value={form.dob}
-  onChange={(v) => updateField("dob", v)}
-/>
+            <DobInput
+              value={form.dob}
+              onChange={(v) => updateField("dob", v)}
+            />
 
-<GenderDropdown
-  value={form.gender}
-  onChange={(v) => updateField("gender", v)}
-/>
+            <GenderDropdown
+              value={form.gender}
+              onChange={(v) => updateField("gender", v)}
+            />
 
-<IdTypeDropdown
-  value={form.idType}
-  onChange={(v) => updateField("idType", v)}
-/>
+            <IdTypeDropdown
+              value={form.idType}
+              onChange={(v) => updateField("idType", v)}
+            />
 
-        <IdInput
-          value={form.idNumber}
-          onChange={(v) => updateField("idNumber", v)}
-        />
+            <IdInput
+              value={form.idNumber}
+              onChange={(v) => updateField("idNumber", v)}
+            />
 
             <CountryInput
               value={form.country}
               onChange={(v) => updateField("country", v)}
             />
 
+            {/* Username */}
+            <h6 className="mt-2">Username</h6>
+            <input
+              type="text"
+              className="form-control"
+              style={{ width: "300px", backgroundColor: "#F5F5F5" }}
+              placeholder="Choose a username"
+              value={form.username}
+              onChange={(e) => updateField("username", e.target.value)}
+            />
+
+            {/* Password */}
+            <h6 className="mt-2">Password</h6>
+            <div style={{ position: "relative", width: "300px" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-control"
+                style={{ backgroundColor: "#F5F5F5", paddingRight: "2.5rem", MsReveal: "none" }}
+                placeholder="Choose a password"
+                value={form.password}
+                onChange={(e) => updateField("password", e.target.value)}
+              />
+              <i
+                className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
+                onClick={() => setShowPassword((prev) => !prev)}
+                style={{
+                  position: "absolute", right: "10px", top: "50%",
+                  transform: "translateY(-50%)", cursor: "pointer", color: "#666",
+                }}
+              />
+            </div>
+
+            {/* Confirm Password */}
+            <h6 className="mt-2">Confirm Password</h6>
+            <div style={{ position: "relative", width: "300px" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-control"
+                style={{ backgroundColor: "#F5F5F5", paddingRight: "2.5rem", MsReveal: "none" }}
+                placeholder="Repeat your password"
+                value={form.confirmPassword}
+                onChange={(e) => updateField("confirmPassword", e.target.value)}
+              />
+            </div>
+
             <div className="mt-4">
-            <button
-  className="btn fw-bold px-4 py-2"
-  onClick={handleSubmit}
-  disabled={loading}
-  style={{
-    backgroundColor: "#e8ff67",
-    color: "#2a2ac4",
-    borderRadius: "50px",
-    border: "2px solid #211aee",
-  }}
->
-  {loading ? "Submitting..." : "Next"}
-  <i className="bi bi-arrow-right-circle ms-2"></i>
-</button>
+              <button
+                className="btn fw-bold px-4 py-2"
+                onClick={handleSubmit}
+                disabled={loading}
+                style={{
+                  backgroundColor: "#e8ff67",
+                  color: "#2a2ac4",
+                  borderRadius: "50px",
+                  border: "2px solid #211aee",
+                }}
+              >
+                {loading ? "Submitting..." : "Next"}
+                <i className="bi bi-arrow-right-circle ms-2"></i>
+              </button>
             </div>
           </div>
 

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using ServerDotNet.Data;
 using ServerDotNet.Models;
 using ServerDotNet.Services;
 
@@ -10,15 +12,19 @@ namespace ServerDotNet.Controllers
     public class OtpController : ControllerBase
     {
         private readonly OtpService _otpService;
+        private readonly AppDbContext _db;
+        private readonly JwtService _jwtService;
 
-        public OtpController(OtpService otpService)
+        public OtpController(OtpService otpService, AppDbContext db, JwtService jwtService)
         {
             _otpService = otpService;
+            _db = db;
+            _jwtService = jwtService;
         }
 
         // POST: /api/otp/send
         [HttpPost("send")]
-        public async System.Threading.Tasks.Task<IActionResult> SendOtp([FromBody] ServerDotNet.Models.SendOtpRequest request)
+        public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
         {
             if (request == null)
                 return BadRequest(new { error = "Request body is null" });
@@ -28,7 +34,6 @@ namespace ServerDotNet.Controllers
 
             try
             {
-                // send OTP using the service
                 await _otpService.SendOtpAsync(request.Mobile);
                 return Ok(new { message = "OTP sent successfully" });
             }
@@ -40,7 +45,7 @@ namespace ServerDotNet.Controllers
 
         // POST: /api/otp/verify
         [HttpPost("verify")]
-        public IActionResult VerifyOtp([FromBody] VerifyOtpRequest request)
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
         {
             if (request == null)
                 return BadRequest(new { error = "Request body is null" });
@@ -58,7 +63,13 @@ namespace ServerDotNet.Controllers
                 if (!isValid)
                     return BadRequest(new { error = "Invalid or expired OTP" });
 
-                return Ok(new { message = "OTP verified successfully" });
+                // Look up user by mobile number to generate JWT
+                var user = await _db.Users.FirstOrDefaultAsync(u => u.MobileNumber == request.Mobile);
+                if (user == null)
+                    return NotFound(new { error = "User not found for this mobile number" });
+
+                var token = _jwtService.GenerateToken(user);
+                return Ok(new { message = "OTP verified successfully", token });
             }
             catch (Exception ex)
             {
@@ -66,8 +77,7 @@ namespace ServerDotNet.Controllers
             }
         }
 
-        // DEV: GET: /api/otp/debug
-        // Temporary endpoint to inspect stored OTPs. REMOVE in production.
+        // DEV: GET: /api/otp/debug — REMOVE in production
         [HttpGet("debug")]
         public IActionResult DebugOtps()
         {
@@ -83,7 +93,4 @@ namespace ServerDotNet.Controllers
             }
         }
     }
-
-    // NOTE: request models moved to Models folder
 }
-

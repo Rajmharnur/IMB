@@ -27,24 +27,30 @@ public class UsersController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.FirstName)) return BadRequest(new { error = "first_name is required" });
         if (string.IsNullOrWhiteSpace(request.LastName)) return BadRequest(new { error = "last_name is required" });
         if (string.IsNullOrWhiteSpace(request.MobileNumber)) return BadRequest(new { error = "mobile_number is required" });
+        if (string.IsNullOrWhiteSpace(request.UserName)) return BadRequest(new { error = "username is required" });
+        if (string.IsNullOrWhiteSpace(request.Password)) return BadRequest(new { error = "password is required" });
 
         var exists = await _db.Users.AnyAsync(u => u.MobileNumber == request.MobileNumber);
         if (exists)
             return Conflict(new { error = "A user with this mobile number already exists" });
 
-        var user = new User
-        {
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Dob = request.Dob,
-            MobileNumber = request.MobileNumber,
-            Email = request.Email,
-            Employer = request.Employer ?? "Pending"
-        };
-        _db.Users.Add(user);
-        await _db.SaveChangesAsync();
+        var result = await _db.Database.ExecuteSqlRawAsync(
+            @"INSERT INTO users (first_name, last_name, dob, mobile_number, email, employer, username, password_hash)
+          VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7})",
+            request.FirstName,
+            request.LastName,
+            request.Dob,
+            request.MobileNumber,
+            request.Email ?? "",
+            request.Employer ?? "Pending",
+            request.UserName,
+            request.Password
+        );
 
-        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new { id = user.Id, message = "User created" });
+        // Get the newly created user id
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.MobileNumber == request.MobileNumber);
+
+        return CreatedAtAction(nameof(GetUser), new { id = user!.Id }, new { id = user.Id, message = "User created" });
     }
 
     /// <summary>Update user (e.g. email, employer from Contact step).</summary>

@@ -21,6 +21,11 @@ const Login = () => {
 
   // PASSWORD LOGIN
   const handleLogin = async () => {
+    if (!userName.trim() || !password.trim()) {
+      setError("Username and password are required");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -38,24 +43,38 @@ const Login = () => {
         return;
       }
 
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        navigate("/dashboard");
+      if (response.status === 401) {
+        setError("Enter valid credentials");
+        return;
       }
+
+      if (!response.ok) {
+        setError("Login failed. Please try again.");
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      navigate("/dashboard");
+
     } catch (err) {
-      setError("Enter valid credentials");
+      setError("Unable to connect to server. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // SEND OTP
+  // SEND OTP — fixed endpoint
   const handleSendOtp = async () => {
+    if (!mobile.trim()) {
+      setError("Mobile number is required");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/send-otp", {
+      const response = await fetch("http://localhost:5000/api/otp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mobile }),
@@ -64,7 +83,8 @@ const Login = () => {
       if (response.ok) {
         setOtpMode(true);
       } else {
-        setError("Failed to send OTP");
+        const data = await response.json().catch(() => ({}));
+        setError(data?.error || "Failed to send OTP");
       }
     } catch {
       setError("Server error");
@@ -73,13 +93,18 @@ const Login = () => {
     }
   };
 
-  // VERIFY OTP
+  // VERIFY OTP — fixed endpoint
   const handleOtpLogin = async () => {
+    if (!otp.trim()) {
+      setError("Please enter the OTP");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/verify-otp", {
+      const response = await fetch("http://localhost:5000/api/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mobile, otp }),
@@ -91,7 +116,7 @@ const Login = () => {
         localStorage.setItem("token", data.token);
         navigate("/dashboard");
       } else {
-        setError("Invalid OTP");
+        setError(data?.error || "Invalid OTP");
       }
     } catch {
       setError("Server error");
@@ -102,7 +127,6 @@ const Login = () => {
 
   return (
     <main className="py-5">
-      {/* Header */}
       <div className="centered-content">
         <div className="text-center mb-4">
           <h1 style={{ color: "#2B26ED" }}>Welcome Back</h1>
@@ -138,6 +162,7 @@ const Login = () => {
                     style={{
                       backgroundColor: "#F5F5F5",
                       paddingRight: "2.5rem",
+                      MsReveal: "none",
                     }}
                   />
                   <i
@@ -178,7 +203,7 @@ const Login = () => {
 
                   <button
                     className="btn fw-bold px-4 py-2"
-                    onClick={() => setUseOtp(true)}
+                    onClick={() => { setUseOtp(true); setError(""); }}
                     style={{
                       backgroundColor: "white",
                       color: "#2a2ac4",
@@ -193,7 +218,7 @@ const Login = () => {
             ) : (
               <>
                 <h4><b>Login with OTP</b></h4>
-                <h6 className="mb-3">Enter your mobile number</h6>
+                <h6 className="mb-3">Enter your registered mobile number</h6>
 
                 <input
                   type="tel"
@@ -259,7 +284,7 @@ const Login = () => {
 
                   <button
                     className="btn fw-bold px-4 py-2"
-                    onClick={() => { setUseOtp(false); setOtpMode(false); setError(""); }}
+                    onClick={() => { setUseOtp(false); setOtpMode(false); setMobile(""); setOtp(""); setError(""); }}
                     style={{
                       backgroundColor: "white",
                       color: "#2a2ac4",

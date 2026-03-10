@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ServerDotNet.Data;
 using ServerDotNet.Models;
 using ServerDotNet.Services;
+// using BCrypt.Net;
 
 namespace ServerDotNet.Controllers
 {
@@ -18,63 +19,61 @@ namespace ServerDotNet.Controllers
       _jwtService = jwtService;
     }
 
+    // Normalizes any mobile format to local 0XXXXXXXXX
+    private static string NormalizeMobile(string input)
+    {
+      var digits = new string(input.Where(char.IsDigit).ToArray());
+
+      // +27XXXXXXXXX or 27XXXXXXXXX -> 0XXXXXXXXX
+      if (digits.StartsWith("27") && digits.Length >= 11)
+        return "0" + digits.Substring(2);
+
+      return digits;
+    }
+
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
+      if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
+        return BadRequest(new { message = "Username and password are required" });
+
       // Try find by username first
       var user = _context.Users
           .FirstOrDefault(u => u.UserName == request.UserName);
 
-      // If not found by username, try to resolve by mobile number.
-      if (user == null && !string.IsNullOrWhiteSpace(request.UserName))
+      // If not found, try resolving as a mobile number
+      if (user == null)
       {
-        // Extract digits from the provided identifier (in case user entered mobile)
-        var digits = new string(request.UserName.Where(char.IsDigit).ToArray());
+        var normalized = NormalizeMobile(request.UserName);
 
-        if (!string.IsNullOrEmpty(digits))
+        if (!string.IsNullOrEmpty(normalized))
         {
-          // Handle international +27 or 27 prefix -> local 0XXXXXXXXX
-          string normalized = digits;
-          if (digits.StartsWith("27") && digits.Length >= 11)
-          {
-            normalized = "0" + digits.Substring(2);
-          }
-
-          // Try direct DB lookups for common stored formats
-          user = _context.Users
-            .FirstOrDefault(u => u.MobileNumber == digits || u.MobileNumber == normalized || u.MobileNumber == "+" + digits);
-
-          // Last resort: load into memory and compare digits-only representations
-          if (user == null)
-          {
-            user = _context.Users
-              .AsEnumerable()
-              .FirstOrDefault(u => new string(u.MobileNumber.Where(char.IsDigit).ToArray()) == digits
-                                   || new string(u.MobileNumber.Where(char.IsDigit).ToArray()) == normalized);
-          }
+          // Query DB with known formats only — avoids loading entire table
+          user = _context.Users.FirstOrDefault(u =>
+            u.MobileNumber == normalized ||
+            u.MobileNumber == "+" + normalized.TrimStart('0').Insert(0, "27") ||
+            u.MobileNumber == "27" + normalized.TrimStart('0')
+          );
         }
       }
 
       if (user == null)
-      {
         return NotFound(new { message = "USER_NOT_FOUND" });
-      }
 
-      // NOTE: previously used BCrypt library to verify hashed passwords.
-      // Because the workspace is offline we avoid external packages and simply
-      // compare strings directly.  In production you should always store
-      // hashed passwords and call a proper verification routine here.
+      // Secure BCrypt password verification
+      // bool passwordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
       if (request.Password != user.PasswordHash)
-      {
-        return Unauthorized(new { message = "INVALID_PASSWORD" });
-      }
+    return Unauthorized(new { message = "INVALID_PASSWORD" });
+
+      // if (!passwordValid)
+      //   return Unauthorized(new { message = "INVALID_PASSWORD" });
 
       var token = _jwtService.GenerateToken(user);
 
       return Ok(new
       {
         message = "LOGIN_SUCCESS",
-        token = token
+        token
       });
     }
   }

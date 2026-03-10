@@ -18,19 +18,21 @@ public class AppDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<User>(e =>
-        {
-            e.ToTable("users");
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-            e.Property(x => x.FirstName).HasColumnName("first_name").HasMaxLength(100);
-            e.Property(x => x.LastName).HasColumnName("last_name").HasMaxLength(100);
-            e.Property(x => x.Dob).HasColumnName("dob");
-            e.Property(x => x.MobileNumber).HasColumnName("mobile_number").HasMaxLength(20);
-            e.Property(x => x.Email).HasColumnName("email").HasMaxLength(150);
-            e.Property(x => x.Employer).HasColumnName("employer").HasMaxLength(150);
-            e.Property(x => x.Otp).HasColumnName("otp").HasMaxLength(10);
-            e.HasIndex(x => x.MobileNumber).IsUnique();
-        });
+ {
+     e.ToTable("users");
+     e.HasKey(x => x.Id);
+     e.Property(x => x.Id).HasColumnName("id");
+     e.Property(x => x.UserName).HasColumnName("username");
+     e.Property(x => x.PasswordHash).HasColumnName("password_hash");
+     e.Property(x => x.FirstName).HasColumnName("first_name").HasMaxLength(100);
+     e.Property(x => x.LastName).HasColumnName("last_name").HasMaxLength(100);
+     e.Property(x => x.Dob).HasColumnName("dob");
+     e.Property(x => x.MobileNumber).HasColumnName("mobile_number").HasMaxLength(20);
+     e.Property(x => x.Email).HasColumnName("email").HasMaxLength(150);
+     e.Property(x => x.Employer).HasColumnName("employer").HasMaxLength(150);
+     e.Property(x => x.Otp).HasColumnName("otp").HasMaxLength(10);
+     e.HasIndex(x => x.MobileNumber).IsUnique();
+ });
 
         modelBuilder.Entity<OtpCode>(e =>
         {

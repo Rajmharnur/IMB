@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 namespace ServerDotNet.Models;
 
 public class User
@@ -19,4 +20,5 @@ public class User
     public ICollection<Address> Addresses { get; set; } = new List<Address>();
     public ICollection<Identification> Identifications { get; set; } = new List<Identification>();
     public ICollection<WorkPermit> WorkPermits { get; set; } = new List<WorkPermit>();
+    
 }

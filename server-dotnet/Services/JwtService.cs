@@ -48,7 +48,9 @@ namespace ServerDotNet.Services
         ["sub"] = user.Id,
         ["name"] = $"{user.FirstName} {user.LastName}",
         ["email"] = user.Email ?? string.Empty,
+        ["username"] = user.UserName,
         ["exp"] = DateTimeOffset.UtcNow.AddDays(_expiryDays).ToUnixTimeSeconds()
+
       };
 
       string headerJson = JsonSerializer.Serialize(header);

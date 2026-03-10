@@ -52,7 +52,7 @@
               "RelativeDocumentMoniker": "imb\\src\\pages\\OTP.js",
               "ToolTip": "D:\\Project\\imb\\src\\pages\\OTP.js",
               "RelativeToolTip": "imb\\src\\pages\\OTP.js",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAzAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2026-03-08T11:05:12.796Z",
               "EditorCaption": ""
@@ -66,8 +66,7 @@
               "ToolTip": "D:\\Project\\imb\\src\\pages\\Login.js",
               "RelativeToolTip": "imb\\src\\pages\\Login.js",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-03-08T11:05:12.701Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-08T11:05:12.701Z"
             },
             {
               "$type": "Document",
@@ -78,8 +77,7 @@
               "ToolTip": "D:\\Project\\server-dotnet\\Services\\OtpService.cs",
               "RelativeToolTip": "server-dotnet\\Services\\OtpService.cs",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-08T11:05:12.689Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-08T11:05:12.689Z"
             },
             {
               "$type": "Document",
@@ -90,8 +88,7 @@
               "ToolTip": "D:\\Project\\server-dotnet\\Controllers\\OtpController.cs",
               "RelativeToolTip": "server-dotnet\\Controllers\\OtpController.cs",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-08T11:05:12.676Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-08T11:05:12.676Z"
             },
             {
               "$type": "Document",
@@ -103,8 +100,7 @@
               "RelativeToolTip": "server-dotnet\\Program.cs",
               "ViewState": "AgIAABwAAAAAAAAAAIBZwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-08T10:34:13.868Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-08T10:34:13.868Z"
             },
             {
               "$type": "Document",
@@ -128,8 +124,7 @@
               "RelativeToolTip": "imb\\src\\pages\\Application.js",
               "ViewState": "AgIAAAAAAAAAAAAAAEBVwAUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-03-04T15:13:00.813Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-04T15:13:00.813Z"
             },
             {
               "$type": "Document",
@@ -141,8 +136,7 @@
               "RelativeToolTip": "server-dotnet\\server-dotnet.csproj",
               "ViewState": "AgIAAAkAAAAAAAAAAAAWwAgAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-03-04T15:11:07.651Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-04T15:11:07.651Z"
             }
           ]
         }

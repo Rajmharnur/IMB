@@ -84,6 +84,7 @@ D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.AssemblyInfoInputs.cache
 D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.AssemblyInfo.cs
 D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.csproj.CoreCompileInputs.cache
 D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.MvcApplicationPartsAssemblyInfo.cache
+D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.sourcelink.json
 D:\Project\server-dotnet\obj\Debug\net8.0\rjimswa.dswa.cache.json
 D:\Project\server-dotnet\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 D:\Project\server-dotnet\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
@@ -98,4 +99,3 @@ D:\Project\server-dotnet\obj\Debug\net8.0\refint\server-dotnet.dll
 D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.pdb
 D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.genruntimeconfig.cache
 D:\Project\server-dotnet\obj\Debug\net8.0\ref\server-dotnet.dll
-D:\Project\server-dotnet\obj\Debug\net8.0\server-dotnet.sourcelink.json

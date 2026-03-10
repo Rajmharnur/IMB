@@ -2,7 +2,8 @@ namespace ServerDotNet.Models
 {
     public class VerifyOtpRequest
     {
-        public required string Mobile { get; set; }
-        public required string Otp { get; set; }
+       public string Mobile { get; set; } = null!;
+       public string Otp { get; set; } = null!;
+       
     }
 }

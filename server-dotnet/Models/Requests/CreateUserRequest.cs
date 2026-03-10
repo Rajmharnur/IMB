@@ -21,4 +21,9 @@ public class CreateUserRequest
 
     [JsonPropertyName("employer")]
     public string? Employer { get; set; }
+
+    [JsonPropertyName("username")]
+    public string UserName { get; set; } = null!;      
+    [JsonPropertyName("password")]
+    public string Password { get; set; } = null!;     
 }

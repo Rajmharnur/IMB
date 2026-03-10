@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import React, { useState } from "react";
 import "../components/Body.css";
 import "./Application.css";
 import { useNavigate } from "react-router-dom";
