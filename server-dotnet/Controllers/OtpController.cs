@@ -23,25 +23,31 @@ namespace ServerDotNet.Controllers
         }
 
         // POST: /api/otp/send
-        [HttpPost("send")]
-        public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
-        {
-            if (request == null)
-                return BadRequest(new { error = "Request body is null" });
+        // POST: /api/otp/send
+[HttpPost("send")]
+public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
+{
+    if (request == null)
+        return BadRequest(new { error = "Request body is null" });
 
-            if (string.IsNullOrWhiteSpace(request.Mobile))
-                return BadRequest(new { error = "Mobile number is required" });
+    if (string.IsNullOrWhiteSpace(request.Mobile))
+        return BadRequest(new { error = "Mobile number is required" });
 
-            try
-            {
-                await _otpService.SendOtpAsync(request.Mobile);
-                return Ok(new { message = "OTP sent successfully" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "An error occurred while sending OTP", details = ex.Message });
-            }
-        }
+    // Check if user exists
+    var user = await _db.Users.FirstOrDefaultAsync(u => u.MobileNumber == request.Mobile);
+    if (user == null)
+        return NotFound(new { error = "USER_NOT_FOUND" });
+
+    try
+    {
+        await _otpService.SendOtpAsync(request.Mobile);
+        return Ok(new { message = "OTP sent successfully" });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { error = "An error occurred while sending OTP", details = ex.Message });
+    }
+}
 
         // POST: /api/otp/verify
         [HttpPost("verify")]

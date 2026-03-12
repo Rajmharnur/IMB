@@ -53,25 +53,62 @@ public class UsersController : ControllerBase
         return CreatedAtAction(nameof(GetUser), new { id = user!.Id }, new { id = user.Id, message = "User created" });
     }
 
-    /// <summary>Update user (e.g. email, employer from Contact step).</summary>
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
+    /// <summary>Update user and related records.</summary>
+[HttpPut("{id:int}")]
+public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
+{
+    if (request == null)
+        return BadRequest(new { error = "Request body is required" });
+
+    var user = await _db.Users
+        .Include(u => u.Addresses)
+        .Include(u => u.Identifications)
+        .Include(u => u.WorkPermits)
+        .FirstOrDefaultAsync(u => u.Id == id);
+
+    if (user == null)
+        return NotFound(new { error = "User not found" });
+
+    // Personal details
+    if (request.FirstName != null) user.FirstName = request.FirstName;
+    if (request.LastName != null) user.LastName = request.LastName;
+    if (request.Dob.HasValue) user.Dob = request.Dob.Value;
+
+    // Contact & Employment
+    if (request.Email != null) user.Email = request.Email;
+    if (request.Employer != null) user.Employer = request.Employer;
+
+    // Address
+    var address = user.Addresses.FirstOrDefault();
+    if (address != null)
     {
-        if (request == null)
-            return BadRequest(new { error = "Request body is required" });
-
-        var user = await _db.Users.FindAsync(id);
-        if (user == null)
-            return NotFound(new { error = "User not found" });
-
-        if (request.Email != null)
-            user.Email = request.Email;
-        if (request.Employer != null)
-            user.Employer = request.Employer;
-
-        await _db.SaveChangesAsync();
-        return Ok(new { id = user.Id, message = "User updated" });
+        if (request.StreetNameNumber != null) address.StreetNameNumber = request.StreetNameNumber;
+        if (request.Suburb != null) address.Suburb = request.Suburb;
+        if (request.City != null) address.City = request.City;
+        if (request.PostalCode != null) address.PostalCode = request.PostalCode;
+        if (request.Province != null) address.Province = request.Province;
     }
+
+    // Identification
+    var identification = user.Identifications.FirstOrDefault();
+    if (identification != null)
+    {
+        if (request.IdType != null) identification.IdType = request.IdType;
+        if (request.IdNumber != null) identification.IdNumber = request.IdNumber;
+        if (request.CountryOfIssue != null) identification.CountryOfIssue = request.CountryOfIssue;
+    }
+
+    // Work Permit
+    var workPermit = user.WorkPermits.FirstOrDefault();
+    if (workPermit != null)
+    {
+        if (request.PermitIssueDate.HasValue) workPermit.IssueDate = request.PermitIssueDate.Value;
+        if (request.PermitExpiryDate.HasValue) workPermit.ExpiryDate = request.PermitExpiryDate.Value;
+    }
+
+    await _db.SaveChangesAsync();
+    return Ok(new { id = user.Id, message = "User updated successfully" });
+}
 
     /// <summary>Get user by id.</summary>
     [HttpGet("{id:int}")]

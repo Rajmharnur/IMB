@@ -18,7 +18,22 @@ const Login = () => {
   const [error, setError] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
+  // Normalize input to digits and convert country code '27' -> leading 0
+  const normalizeMobileLocal = (input) => {
+    if (!input) return "";
+    const digits = input.replace(/\D/g, "");
+    if (digits.startsWith("27") && digits.length >= 11) {
+      // +27 or 27 international format -> local 0XXXXXXXXX
+      return "0" + digits.slice(2);
+    }
+    return digits;
+  };
 
+  // South African mobile validation (local format starting with 0)
+  const validateMobile = (number) => {
+    const saMobileRegex = /^0[6-8][0-9]{8}$/;
+    return saMobileRegex.test(number);
+  };
   // PASSWORD LOGIN
   const handleLogin = async () => {
     if (!userName.trim() || !password.trim()) {
@@ -39,7 +54,7 @@ const Login = () => {
       const data = await response.json();
 
       if (response.status === 404) {
-        navigate("/application");
+        navigate("/apply");
         return;
       }
 
@@ -65,11 +80,18 @@ const Login = () => {
 
   // SEND OTP — fixed endpoint
   const handleSendOtp = async () => {
-    if (!mobile.trim()) {
+    const normalized = normalizeMobileLocal(mobile);
+
+    if (!normalized) {
       setError("Mobile number is required");
       return;
     }
 
+    if (!validateMobile(normalized)) {
+      setError("Enter a valid South African mobile number");
+      return;
+    }
+    
     setLoading(true);
     setError("");
 
@@ -79,6 +101,11 @@ const Login = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mobile }),
       });
+
+      if (response.status === 404) {
+        navigate("/apply");  // ← redirect if user not found
+        return;
+      }
 
       if (response.ok) {
         setOtpMode(true);
@@ -91,7 +118,7 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
-  };
+};
 
   // VERIFY OTP — fixed endpoint
   const handleOtpLogin = async () => {

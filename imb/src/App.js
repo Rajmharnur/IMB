@@ -10,6 +10,8 @@ import Where from "./pages/Where";
 import Contact from "./pages/Contact";
 import Upload from "./pages/Upload";
 import Thank from "./pages/Thank";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
 function App() {
   return (
     <BrowserRouter>
@@ -24,6 +26,8 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/thank" element={<Thank />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
       </Routes>
     </BrowserRouter>

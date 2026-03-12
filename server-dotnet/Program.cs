@@ -14,7 +14,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 // Add services
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddScoped<OtpService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddCors(options =>
@@ -59,5 +64,4 @@ using (var scope = app.Services.CreateScope())
         )
         """);
 }
-
 app.Run();
