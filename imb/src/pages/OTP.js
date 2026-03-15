@@ -5,18 +5,16 @@ import API_URL from "../config";
 
 const OTP = () => {
   const steps = 5;
-  const activeStep = 2; // OTP step
+  const activeStep = 2;
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Mobile number from previous page (should already be normalized)
   const mobileNumber = location.state?.mobileNumber;
 
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🚨 If user refreshes or comes directly, redirect
   useEffect(() => {
     if (!mobileNumber) {
       navigate("/");
@@ -49,15 +47,13 @@ const OTP = () => {
         }),
       });
 
-      // Safely handle both JSON and plain-text responses
       let data = null;
       let text = null;
       try {
-        // Try text first so we can fallback if it's not valid JSON
         text = await response.text();
         data = text ? JSON.parse(text) : null;
       } catch {
-        data = null; // not JSON
+        data = null;
       }
 
       if (!response.ok) {
@@ -69,8 +65,15 @@ const OTP = () => {
         throw new Error(msg);
       }
 
-      // Success: navigate to Tell with mobile for user creation
-      navigate("/tell", { state: { mobileNumber } });
+      // If token exists → login flow → go to dashboard
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+        navigate("/dashboard");
+      } else {
+        // No token → signup flow → go to tell
+        navigate("/tell", { state: { mobileNumber } });
+      }
+
     } catch (err) {
       setError(err?.message || "Server error");
     } finally {
@@ -102,12 +105,9 @@ const OTP = () => {
 
       <div className="container text-start">
         <div className="row">
-          {/* Left column */}
           <div className="col-md-4">
-            <h4>
-              <b>Enter Your OTP</b>
-            </h4>
-            <h6>OTP sent to {mobileNumber}</h6>
+            <h4><b>Enter Your OTP</b></h4>
+            <h6>OTP sent to +27{mobileNumber?.slice(1)}</h6>
 
             <input
               type="text"
@@ -142,7 +142,6 @@ const OTP = () => {
             </div>
           </div>
 
-          {/* Right column */}
           <div className="col-md-6 d-flex justify-content-end">
             <img
               src="/card.png"

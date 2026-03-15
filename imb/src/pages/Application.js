@@ -13,15 +13,11 @@ const Application = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Normalize input to digits and convert country code '27' -> leading 0
+  // User types 9 digits after +27, we prepend 0 to make 0XXXXXXXXX
   const normalizeMobileLocal = (input) => {
     if (!input) return "";
     const digits = input.replace(/\D/g, "");
-    if (digits.startsWith("27") && digits.length >= 11) {
-      // +27 or 27 international format -> local 0XXXXXXXXX
-      return "0" + digits.slice(2);
-    }
-    return digits;
+    return "0" + digits;
   };
 
   // South African mobile validation (local format starting with 0)
@@ -33,10 +29,11 @@ const Application = () => {
   const handleSendOtp = async () => {
     const normalized = normalizeMobileLocal(mobileNumber);
 
-    if (!normalized) {
+    if (!mobileNumber) {
       setError("Mobile number is required");
       return;
     }
+
     if (!validateMobile(normalized)) {
       setError("Enter a valid South African mobile number");
       return;
@@ -44,7 +41,7 @@ const Application = () => {
 
     setError("");
     setLoading(true);
-
+    console.log("Normalized:", normalized);
     try {
       const response = await fetch(`${API_URL}/api/otp/send`, {
         method: "POST",
@@ -61,7 +58,6 @@ const Application = () => {
         throw new Error(msg || "Failed to send OTP");
       }
 
-      // Navigate to OTP screen with normalized mobile
       navigate("/otp", { state: { mobileNumber: normalized } });
     } catch (err) {
       console.error(err);
@@ -100,23 +96,40 @@ const Application = () => {
             <h4><b>Verify Your Mobile Number</b></h4>
             <h6>Enter your mobile number</h6>
 
-            <input
-              type="tel"
-              className="form-control"
-              placeholder="South African Mobile Number (e.g. 0821234567 or +27821234567)"
-              value={mobileNumber}
-              maxLength={13}
-              onChange={(e) => setMobileNumber(e.target.value)}
-              style={{
-                width: "300px",
-                backgroundColor: "#F5F5F5",
-              }}
-            />
+            {/* Input with +27 prefix */}
+            <div style={{ position: "relative", width: "300px" }}>
+              <span
+                style={{
+                  position: "absolute",
+                  left: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#555",
+                  fontWeight: "bold",
+                  zIndex: 1,
+                  pointerEvents: "none",
+                }}
+              >
+                +27
+              </span>
+              <input
+                type="tel"
+                className="form-control"
+                placeholder="821234567"
+                value={mobileNumber}
+                maxLength={9}
+                onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ""))}
+                style={{
+                  backgroundColor: "#F5F5F5",
+                  paddingLeft: "48px",
+                }}
+              />
+            </div>
 
             {error && <small style={{ color: "red" }}>{error}</small>}
 
             <h6 className="mt-2">
-              We’ll send you a One-Time PIN (OTP) via SMS to verify your number.
+              We'll send you a One-Time PIN (OTP) via SMS to verify your number.
             </h6>
 
             <div className="mt-4">

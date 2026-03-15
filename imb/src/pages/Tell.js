@@ -42,6 +42,7 @@ const Tell = () => {
   };
 
   const handleSubmit = async () => {
+    console.log("Form data:", form);
     if (
       !form.firstName || !form.lastName || !form.dob || !form.gender ||
       !form.idType || !form.idNumber || !form.country ||
@@ -87,7 +88,7 @@ const Tell = () => {
 
       const userId = createData.id;
       if (!userId) throw new Error("User created but no id returned");
-
+      
       const idRes = await fetch(`${API_BASE}/api/users/${userId}/identification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

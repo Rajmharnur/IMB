@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "../components/Body.css";
-import FileUploadButton from "../components/FileUploadButton";
-import FileUploadButton1 from "../components/FileUploadButton1";
-import FileUploadButton2 from "../components/FileUploadButton2";
 import WorkPermitDate from "../components/WorkPermitDate";
 import WorkPermitDateExp from "../components/WorkPermitDateExp";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -16,6 +13,10 @@ const Upload = () => {
   const location = useLocation();
   const userId = location.state?.userId;
 
+  const [idFile, setIdFile] = useState(null);
+  const [addressFile, setAddressFile] = useState(null);
+  const [permitFile, setPermitFile] = useState(null);
+
   const [issueDate, setIssueDate] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,18 +26,45 @@ const Upload = () => {
     if (!userId) navigate("/contact");
   }, [userId, navigate]);
 
+  const uploadFile = async (file, endpoint) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${API_BASE}/api/upload/${endpoint}/${userId}`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data?.error || `Failed to upload to ${endpoint}`);
+    }
+    return res.json();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
     setLoading(true);
 
     try {
+      // Upload ID document (required)
+      if (!idFile) throw new Error("ID document is required");
+      await uploadFile(idFile, "id-document");
+
+      // Upload proof of address (required)
+      if (!addressFile) throw new Error("Proof of address is required");
+      await uploadFile(addressFile, "proof-of-address");
+
+      // Upload work permit (optional)
+      if (permitFile) {
+        await uploadFile(permitFile, "work-permit");
+      }
+
+      // Save work permit dates
       const res = await fetch(`${API_BASE}/api/users/${userId}/work-permit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          permit_document_path: "pending",
+          permit_document_path: permitFile ? "uploaded" : "pending",
           issue_date: issueDate || new Date().toISOString().slice(0, 10),
           expiry_date: expiryDate || new Date().toISOString().slice(0, 10),
         }),
@@ -55,6 +83,44 @@ const Upload = () => {
     }
   };
 
+  const FileInput = ({ label, note, onChange, file, required }) => (
+    <div className="mb-3">
+      <h6>
+        {label} {required && <span style={{ color: "red" }}>*</span>}
+        {note && <><br /><small>{note}</small></>}
+      </h6>
+      <div
+        style={{
+          width: "300px",
+          border: `2px dashed ${file ? "#28a745" : "#211aee"}`,
+          borderRadius: "10px",
+          padding: "12px",
+          backgroundColor: file ? "#f0fff4" : "#F5F5F5",
+          cursor: "pointer",
+          textAlign: "center",
+        }}
+        onClick={() => document.getElementById(`file-${label}`).click()}
+      >
+        <input
+          id={`file-${label}`}
+          type="file"
+          accept=".jpg,.jpeg,.png,.pdf"
+          style={{ display: "none" }}
+          onChange={(e) => onChange(e.target.files[0])}
+        />
+        {file ? (
+          <span style={{ color: "#28a745" }}>
+            <i className="bi bi-check-circle me-2"></i>{file.name}
+          </span>
+        ) : (
+          <span style={{ color: "#666" }}>
+            <i className="bi bi-upload me-2"></i>Click to upload
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <main className="py-5">
       <div className="centered-content text-center mb-4">
@@ -64,9 +130,7 @@ const Upload = () => {
           <div className="stepper">
             {Array.from({ length: steps }).map((_, index) =>
               index + 1 === activeStep ? (
-                <div key={index} className="active-step">
-                  {index + 1}
-                </div>
+                <div key={index} className="active-step">{index + 1}</div>
               ) : (
                 <i key={index} className="bi bi-circle-fill step"></i>
               )
@@ -77,27 +141,35 @@ const Upload = () => {
 
       <div className="container text-start">
         <div className="row">
-          {/* LEFT COLUMN */}
           <div className="col-md-4">
             <h4><b>Upload Your Documents</b></h4>
 
             {error && <div className="text-danger mb-2">{error}</div>}
 
-            {/* ✅ FORM START */}
             <form onSubmit={handleSubmit}>
-              <h6>
-                Upload good quality picture of your ID <br />
-                <small>(jpg, jpeg, png)</small>
-              </h6>
-              <FileUploadButton />
+              <FileInput
+                label="ID Document"
+                note="(jpg, jpeg, png, pdf)"
+                file={idFile}
+                onChange={setIdFile}
+                required
+              />
 
-              <h6 className="mt-3">Upload Proof of Address</h6>
-              <FileUploadButton1 />
+              <FileInput
+                label="Proof of Address"
+                note="(jpg, jpeg, png, pdf)"
+                file={addressFile}
+                onChange={setAddressFile}
+                required
+              />
 
-              <h6 className="mt-3">
-                Upload good quality picture of your work permit (optional)
-              </h6>
-              <FileUploadButton2 />
+              <FileInput
+                label="Work Permit"
+                note="Optional (jpg, jpeg, png, pdf)"
+                file={permitFile}
+                onChange={setPermitFile}
+                required={false}
+              />
 
               <WorkPermitDate value={issueDate} onChange={setIssueDate} />
               <WorkPermitDateExp value={expiryDate} onChange={setExpiryDate} />
@@ -115,21 +187,15 @@ const Upload = () => {
                     fontSize: "1rem",
                   }}
                 >
-                  {loading ? "Submitting..." : "Submit"}
+                  {loading ? "Uploading..." : "Submit"}
                   <i className="bi bi-arrow-right-circle ms-2"></i>
                 </button>
               </div>
             </form>
-            {/* ✅ FORM END */}
           </div>
 
-          {/* RIGHT COLUMN */}
           <div className="col-md-6 d-flex justify-content-end">
-            <img
-              src="/card.png"
-              alt="Card"
-              style={{ width: "627px", height: "391px" }}
-            />
+            <img src="/card.png" alt="Card" style={{ width: "627px", height: "391px" }} />
           </div>
         </div>
       </div>

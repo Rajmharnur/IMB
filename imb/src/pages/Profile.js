@@ -9,6 +9,7 @@ const Profile = () => {
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -28,6 +29,18 @@ const Profile = () => {
     countryOfIssue: "",
     permitIssueDate: "",
     permitExpiryDate: "",
+  });
+
+  const [docs, setDocs] = useState({
+    idFile: null,
+    addressFile: null,
+    permitFile: null,
+  });
+
+  const [currentDocs, setCurrentDocs] = useState({
+    idDocumentPath: null,
+    proofOfAddressPath: null,
+    permitDocumentPath: null,
   });
 
   useEffect(() => {
@@ -65,6 +78,13 @@ const Profile = () => {
             permitIssueDate: workPermit?.issueDate ? workPermit.issueDate.slice(0, 10) : "",
             permitExpiryDate: workPermit?.expiryDate ? workPermit.expiryDate.slice(0, 10) : "",
           });
+
+          setCurrentDocs({
+            idDocumentPath: identification?.idDocumentPath || null,
+            proofOfAddressPath: address?.proofOfAddressPath || null,
+            permitDocumentPath: workPermit?.permitDocumentPath || null,
+          });
+
           setLoading(false);
         })
         .catch(() => { setError("Failed to load profile"); setLoading(false); });
@@ -74,6 +94,45 @@ const Profile = () => {
   }, [navigate]);
 
   const updateField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  const uploadFile = async (file, endpoint) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${API_BASE}/api/upload/${endpoint}/${userId}`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data?.error || `Failed to upload to ${endpoint}`);
+    }
+    return res.json();
+  };
+
+  const handleUploadDocs = async () => {
+    if (!docs.idFile && !docs.addressFile && !docs.permitFile) {
+      setError("Please select at least one file to upload");
+      return;
+    }
+
+    setUploading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      if (docs.idFile) await uploadFile(docs.idFile, "id-document");
+      if (docs.addressFile) await uploadFile(docs.addressFile, "proof-of-address");
+      if (docs.permitFile) await uploadFile(docs.permitFile, "work-permit");
+
+      setSuccess("Documents uploaded successfully!");
+      setDocs({ idFile: null, addressFile: null, permitFile: null });
+      setTimeout(() => navigate("/dashboard"), 1500);
+    } catch (err) {
+      setError(err.message || "Failed to upload documents");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -120,6 +179,50 @@ const Profile = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const FileInput = ({ label, note, file, onChange, currentPath }) => {
+    const hasExisting = currentPath && currentPath !== "pending";
+    return (
+      <div className="mb-3">
+        <h6>{label} {note && <small className="text-muted">{note}</small>}</h6>
+        {hasExisting && (
+          <small className="text-success d-block mb-1">
+            <i className="bi bi-check-circle me-1"></i>
+            File already uploaded — select a new one to replace
+          </small>
+        )}
+        <div
+          style={{
+            width: "300px",
+            border: `2px dashed ${file ? "#28a745" : "#211aee"}`,
+            borderRadius: "10px",
+            padding: "12px",
+            backgroundColor: file ? "#f0fff4" : "#F5F5F5",
+            cursor: "pointer",
+            textAlign: "center",
+          }}
+          onClick={() => document.getElementById(`profile-file-${label}`).click()}
+        >
+          <input
+            id={`profile-file-${label}`}
+            type="file"
+            accept=".jpg,.jpeg,.png,.pdf"
+            style={{ display: "none" }}
+            onChange={(e) => onChange(e.target.files[0])}
+          />
+          {file ? (
+            <span style={{ color: "#28a745" }}>
+              <i className="bi bi-check-circle me-2"></i>{file.name}
+            </span>
+          ) : (
+            <span style={{ color: "#666" }}>
+              <i className="bi bi-upload me-2"></i>Click to upload
+            </span>
+          )}
+        </div>
+      </div>
+    );
   };
 
   const inputStyle = { width: "300px", backgroundColor: "#F5F5F5" };
@@ -258,6 +361,57 @@ const Profile = () => {
               <h6>Expiry Date</h6>
               <input type="date" className="form-control" style={inputStyle}
                 value={form.permitExpiryDate} onChange={(e) => updateField("permitExpiryDate", e.target.value)} />
+            </div>
+          </div>
+
+          {/* Documents Upload */}
+          <div className="col-md-12">
+            <div className="p-4 shadow-sm rounded" style={{ backgroundColor: "white", border: "1.5px solid #e0e0e0" }}>
+              <h5 className="mb-4" style={{ color: "#2B26ED" }}><b>Update Documents</b></h5>
+              <div className="row g-3">
+                <div className="col-md-4">
+                  <FileInput
+                    label="ID Document"
+                    note="(jpg, jpeg, png, pdf)"
+                    file={docs.idFile}
+                    onChange={(f) => setDocs((prev) => ({ ...prev, idFile: f }))}
+                    currentPath={currentDocs.idDocumentPath}
+                  />
+                </div>
+                <div className="col-md-4">
+                  <FileInput
+                    label="Proof of Address"
+                    note="(jpg, jpeg, png, pdf)"
+                    file={docs.addressFile}
+                    onChange={(f) => setDocs((prev) => ({ ...prev, addressFile: f }))}
+                    currentPath={currentDocs.proofOfAddressPath}
+                  />
+                </div>
+                <div className="col-md-4">
+                  <FileInput
+                    label="Work Permit"
+                    note="Optional (jpg, jpeg, png, pdf)"
+                    file={docs.permitFile}
+                    onChange={(f) => setDocs((prev) => ({ ...prev, permitFile: f }))}
+                    currentPath={currentDocs.permitDocumentPath}
+                  />
+                </div>
+              </div>
+
+              <button
+                className="btn fw-bold px-4 py-2 mt-3"
+                onClick={handleUploadDocs}
+                disabled={uploading}
+                style={{
+                  backgroundColor: "#e8ff67",
+                  color: "#2a2ac4",
+                  borderRadius: "50px",
+                  border: "2px solid #211aee",
+                }}
+              >
+                {uploading ? "Uploading..." : "Upload Documents"}
+                <i className="bi bi-upload ms-2"></i>
+              </button>
             </div>
           </div>
 

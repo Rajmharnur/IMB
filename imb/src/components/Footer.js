@@ -25,7 +25,7 @@ export const Footer = () => {
           
           {/* Middle Section: Links */}
           <div className="col-md-4">
-          <p className="custom-underline"><h5>Products</h5></p>
+          <div className="custom-underline"><h5>Products</h5></div>
             <ul className="list-unstyled">
               <li><h6>IMB Personal Packages</h6></li>
               <br />
@@ -38,7 +38,7 @@ export const Footer = () => {
           
           {/* Right Section: Get in Touch */}
           <div className="col-md-4 ">
-          <p className="custom-underline"><h5>Get in touch</h5></p>
+          <div className="custom-underline"><h5>Get in touch</h5></div>
             {/* Address Block */}
             <div className="d-flex align-items-start">
     <i className="bi bi-geo-alt-fill me-2"></i>

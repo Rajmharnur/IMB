@@ -12,12 +12,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    if (!token) { navigate("/login"); return; }
 
-    // Decode JWT to get user id
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
       const userId = payload.sub;
@@ -29,14 +25,8 @@ const Dashboard = () => {
           if (!res.ok) throw new Error("Failed to fetch user");
           return res.json();
         })
-        .then((data) => {
-          setUser(data);
-          setLoading(false);
-        })
-        .catch(() => {
-          setError("Failed to load profile");
-          setLoading(false);
-        });
+        .then((data) => { setUser(data); setLoading(false); })
+        .catch(() => { setError("Failed to load profile"); setLoading(false); });
     } catch {
       navigate("/login");
     }
@@ -47,26 +37,80 @@ const Dashboard = () => {
     navigate("/login");
   };
 
-  if (loading) {
-    return (
-      <main className="py-5">
-        <div className="container text-center mt-5">
-          <div className="spinner-border text-primary" role="status" />
-          <p className="mt-3">Loading your profile...</p>
-        </div>
-      </main>
-    );
-  }
+  const DocumentCard = ({ title, path }) => {
+    const fileUrl = path && path !== "pending"
+      ? `${API_BASE}/api/upload/file?path=${encodeURIComponent(path)}`
+      : null;
 
-  if (error) {
-    return (
-      <main className="py-5">
-        <div className="container text-center mt-5">
-          <p className="text-danger">{error}</p>
-        </div>
-      </main>
+    const isImage = path && (
+      path.endsWith(".jpg") || path.endsWith(".jpeg") || path.endsWith(".png")
     );
-  }
+
+    return (
+      <div className="p-3 mb-3 rounded"
+        style={{ backgroundColor: "#f9f9f9", border: "1.5px solid #e0e0e0" }}>
+        <h6 style={{ color: "#2B26ED" }}><b>{title}</b></h6>
+        {fileUrl ? (
+          <>
+            {isImage ? (
+              <img
+                src={fileUrl}
+                alt={title}
+                style={{
+                  width: "100%",
+                  maxHeight: "200px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                  marginBottom: "8px"
+                }}
+              />
+            ) : (
+              <div className="mb-2">
+                <i className="bi bi-file-earmark-pdf text-danger me-2" style={{ fontSize: "2rem" }}></i>
+                <span className="text-muted">PDF Document</span>
+              </div>
+            )}
+            <a
+              href={fileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-sm fw-bold"
+              style={{
+                backgroundColor: "#e8ff67",
+                color: "#2a2ac4",
+                borderRadius: "50px",
+                border: "2px solid #211aee",
+                fontSize: "12px"
+              }}
+            >
+              <i className="bi bi-eye me-1"></i> View
+            </a>
+          </>
+        ) : (
+          <p className="text-muted mb-0">
+            <i className="bi bi-clock me-1"></i> Not uploaded yet
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  if (loading) return (
+    <main className="py-5">
+      <div className="container text-center mt-5">
+        <div className="spinner-border text-primary" role="status" />
+        <p className="mt-3">Loading your profile...</p>
+      </div>
+    </main>
+  );
+
+  if (error) return (
+    <main className="py-5">
+      <div className="container text-center mt-5">
+        <p className="text-danger">{error}</p>
+      </div>
+    </main>
+  );
 
   const address = user?.addresses?.[0];
   const identification = user?.identifications?.[0];
@@ -76,7 +120,6 @@ const Dashboard = () => {
     <main className="py-5">
       <div className="container">
 
-        {/* Header */}
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h1 style={{ color: "#2B26ED" }}>
             Welcome, <b>{user?.firstName}</b> 👋
@@ -97,7 +140,6 @@ const Dashboard = () => {
 
         <div className="row g-4">
 
-          {/* Personal Details Card */}
           <div className="col-md-6">
             <div className="p-4 shadow-sm rounded" style={{ backgroundColor: "white", border: "1.5px solid #e0e0e0" }}>
               <div className="d-flex justify-content-between align-items-center mb-3">
@@ -125,7 +167,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Address Card */}
           <div className="col-md-6">
             <div className="p-4 shadow-sm rounded" style={{ backgroundColor: "white", border: "1.5px solid #e0e0e0" }}>
               <h5 className="mb-3" style={{ color: "#2B26ED" }}><b>Address</b></h5>
@@ -141,7 +182,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* ID Details Card */}
           <div className="col-md-6">
             <div className="p-4 shadow-sm rounded" style={{ backgroundColor: "white", border: "1.5px solid #e0e0e0" }}>
               <h5 className="mb-3" style={{ color: "#2B26ED" }}><b>Identification</b></h5>
@@ -155,7 +195,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Work Permit Card */}
           <div className="col-md-6">
             <div className="p-4 shadow-sm rounded" style={{ backgroundColor: "white", border: "1.5px solid #e0e0e0" }}>
               <h5 className="mb-3" style={{ color: "#2B26ED" }}><b>Work Permit</b></h5>
@@ -165,6 +204,23 @@ const Dashboard = () => {
                   <p><b>Expiry Date:</b> {new Date(workPermit.expiryDate).toLocaleDateString()}</p>
                 </>
               ) : <p className="text-muted">No work permit on record</p>}
+            </div>
+          </div>
+
+          <div className="col-md-12">
+            <div className="p-4 shadow-sm rounded" style={{ backgroundColor: "white", border: "1.5px solid #e0e0e0" }}>
+              <h5 className="mb-4" style={{ color: "#2B26ED" }}><b>Uploaded Documents</b></h5>
+              <div className="row g-3">
+                <div className="col-md-4">
+                  <DocumentCard title="ID Document" path={identification?.idDocumentPath} />
+                </div>
+                <div className="col-md-4">
+                  <DocumentCard title="Proof of Address" path={address?.proofOfAddressPath} />
+                </div>
+                <div className="col-md-4">
+                  <DocumentCard title="Work Permit" path={workPermit?.permitDocumentPath} />
+                </div>
+              </div>
             </div>
           </div>
 
